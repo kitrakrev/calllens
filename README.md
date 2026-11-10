@@ -1,6 +1,6 @@
 # CallLens + Side Quest Hotline
 
-**Project page + 50s demo:** https://kitrakrev.github.io/calllens/
+**Project page + 50s demo:** https://kitrakrev.github.io/calllens/ · **Slides:** https://kitrakrev.github.io/calllens/CallLens_Slides.pdf
 
 Built at the Vapi "Side Quest Hotline" hackathon (Nov 9, 2026).
 
