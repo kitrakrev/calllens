@@ -11,3 +11,12 @@ Built at the Vapi "Side Quest Hotline" hackathon (Nov 9, 2026).
 Routes: `/vapi` (tool), `/dashboard`, `/lens?call_id=`, `/ab` (with vs without Jev), `/heal`.
 
 Run: `pip install fastapi uvicorn httpx`, set `EXA_API_KEY`, `JEV_API_KEY`, `VAPI_API_KEY`, `VAPI_ASSISTANT_ID` in `.env`, then `uvicorn app:app --port 8000`.
+
+## Self-heal result (repeat call, same script)
+
+| | Before | After |
+|---|---|---|
+| "Embarcadero" heard as | Aero / Arrow / Amir | Embarcadero, first try |
+| Location re-asks | 3 | 1 |
+| Turns | 22 | 17 |
+| Avg turn latency | 2731 ms | 2947 ms (not fixed; transcriber-bound) |

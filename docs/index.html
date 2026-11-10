@@ -32,13 +32,23 @@ code{background:var(--panel);padding:2px 6px;border-radius:6px}footer{color:var(
 <div class="c o"><b>Aero · Arrow · Amir</b>what Deepgram heard when I said “Embarcadero”</div>
 <div class="c o"><b>1530 ms</b>transcriber latency per turn: the bottleneck (LLM was 334 ms)</div>
 <div class="c"><b>10 / 22</b>turns failed: misheard or slow, each with a concrete fix</div>
-<div class="c"><b>3 / 3</b>searches where Jev picked a better result than Exa’s #1</div>
+<div class="c"><b>6 / 6</b>searches where Jev picked a better result than Exa’s #1 (~110 ms each)</div>
 </div>
 
 <h2>How it works</h2>
 <p>Caller → <b>Deepgram</b> Nova-3 (ears) → <b>Vapi</b> (orchestration) → tool server: <b>Exa</b> live search → <b>Jev</b> typed Choice → <b>Deepgram</b> Aura (voice).<br>
 CallLens pulls each call from the Vapi API, attributes latency per stage, has Jev label every turn (slow, misheard, tool issue, talked over, off track), score the whole call and detect the caller’s language, then turns findings into a live <code>PATCH /assistant</code>: Deepgram keyterms, a shorter endpointing wait, multilingual mode.</p>
 <img class="shot" src="turns.jpg" alt="Turn-by-turn diagnosis: misheard and slow turns highlighted with fixes">
+
+
+<h2>Self-heal, tested on a repeat call</h2>
+<table><tr><th>Same caller, same script</th><th>Before heal</th><th>After heal</th></tr>
+<tr><td>“Embarcadero” heard as</td><td>Aero · Arrow · Amir</td><td><b style="color:var(--grn)">Embarcadero, first try</b></td></tr>
+<tr><td>Agent re-asked location</td><td>3 times</td><td><b style="color:var(--grn)">1 time</b></td></tr>
+<tr><td>Turns to finish</td><td>22</td><td><b style="color:var(--grn)">17</b></td></tr>
+<tr><td>Avg turn latency</td><td>2731 ms</td><td>2947 ms (not fixed)</td></tr>
+<tr><td>Transcriber</td><td>1530 ms</td><td>1551 ms (next fix)</td></tr></table>
+<p>The live patch (Deepgram keyterm + shorter endpointing wait) fixed the mishearing CallLens found. Latency is still transcriber-bound; one call each, so treat it as anecdotal.</p>
 
 <h2>Vapi Composer vs CallLens, same call</h2>
 <table><tr><th></th><th>Vapi Composer</th><th>CallLens</th></tr>
