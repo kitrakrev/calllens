@@ -22,7 +22,8 @@ JEV_KEY = os.environ.get("JEV_API_KEY", "")
 
 app = FastAPI()
 LOG = []  # latency log shown on /stats for the demo
-AB = []  # with vs without Jev, per tool call
+AB_FILE = "ab.json"
+AB = json.load(open(AB_FILE)) if os.path.exists(AB_FILE) else []  # with vs without Jev, persisted across restarts
 
 
 def exa_search(query: str, area: str) -> list[dict]:
@@ -96,6 +97,7 @@ async def vapi(req: Request):
                    "without_jev": opts[0]["title"] if opts else "-", "with_jev": pick["name"],
                    "probs": {opts[int(k[1:])]["title"][:60]: v for k, v in (pick.get("probs") or {}).items() if k[1:].isdigit() and int(k[1:]) < len(opts)},
                    "confidence": pick.get("confidence"), "changed": bool(opts) and pick["name"] != opts[0]["title"]})
+        json.dump(AB[-200:], open(AB_FILE, "w"))
         ms = int((time.time() - t0) * 1000)
         LOG.append({"mood": mood, "area": area, "pick": pick, "ms": ms})
         results.append({

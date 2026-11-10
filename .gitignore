@@ -2,3 +2,4 @@
 *.log
 __pycache__/
 voice/*.wav
+ab.json
