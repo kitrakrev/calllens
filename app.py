@@ -152,3 +152,65 @@ def heal_page(call_id: str | None = None, go: int = 0):
     return f"""<!doctype html><meta charset=utf-8><title>Self-heal</title><style>body{{font-family:system-ui;margin:24px;background:#0b0d12;color:#e6e6e6}}h1{{color:#5ce1a6}}</style>
 <h1>Self-heal</h1><p>Call {p['call']}: CallLens findings turned into a live patch on the Vapi assistant.</p><ul>{items}</ul>{state}
 <pre style=color:#9aa4b2>{html.escape(str(p['patch']))}</pre>"""
+
+
+@app.get("/gen.py")
+def gen_script():
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(open("voice/gen.py").read())
+
+
+@app.post("/voice/{i}")
+async def voice_upload(i: int, req: Request):
+    if not 1 <= i <= 6:
+        return {"ok": False}
+    open(f"voice/calllens_{i}.wav", "wb").write(await req.body())
+    return {"ok": True}
+
+
+@app.get("/ref.wav")
+def ref_wav():
+    from fastapi.responses import FileResponse
+    return FileResponse("voice/ref.wav", media_type="audio/wav")
+
+
+# POLISH: shared nav + theme injected into every HTML page for the demo
+POLISH = """<link rel=preconnect href=https://fonts.googleapis.com><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel=stylesheet>
+<style>
+:root{--bg:#0b0d12;--panel:#141922;--line:#252b37;--txt:#e6e8ec;--mut:#8f9aab;--grn:#5ce1a6;--org:#f2a65a;--red:#ff6b6b;--blu:#8ab4f8}
+body{font-family:Inter,system-ui,sans-serif!important;background:var(--bg)!important;color:var(--txt)!important;margin:0!important;padding:0 28px 40px!important;font-size:15px}
+h1{font-family:'Space Grotesk',Inter,sans-serif!important;font-size:30px!important;color:var(--grn)!important;margin:18px 0 6px!important}
+h3{font-family:'Space Grotesk',Inter,sans-serif;color:#c9d1dd;letter-spacing:.2px}
+nav.cl{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:6px;margin:0 -28px 8px;padding:12px 28px;background:rgba(11,13,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.cl b{font-family:'Space Grotesk';font-size:18px;color:var(--grn);margin-right:18px}
+nav.cl a{color:var(--mut);text-decoration:none;padding:7px 14px;border-radius:999px;font-weight:600;font-size:14px}
+nav.cl a:hover{background:var(--panel);color:var(--txt)}nav.cl a.on{background:var(--grn);color:#08110c}
+nav.cl span{margin-left:auto;color:var(--mut);font-size:13px}nav.cl span i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--grn);margin-right:6px;box-shadow:0 0 8px var(--grn)}
+table{border-collapse:separate!important;border-spacing:0!important;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th{background:#1a2030;color:var(--mut)!important;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+td,th{border-bottom:1px solid var(--line)!important;padding:10px 12px!important}
+tr.bad td{background:rgba(255,107,107,.08)!important}tr.bad td:nth-child(4) b{background:var(--red);color:#1a0505;padding:2px 10px;border-radius:999px;font-size:12px;text-transform:uppercase}
+tr:not(.bad) td:nth-child(4) b{background:rgba(92,225,166,.15);color:var(--grn);padding:2px 10px;border-radius:999px;font-size:12px;text-transform:uppercase}
+ul{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 32px!important}
+a{color:var(--blu)}pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.p,.s{border-radius:12px!important}
+</style>"""
+
+
+def _nav(path: str) -> str:
+    items = [("/dashboard", "Dashboard"), ("/lens", "Call report"), ("/ab", "Jev A/B"), ("/heal", "Self-heal")]
+    links = "".join(f"<a class={'on' if path.startswith(u) else ''} href='{u}'>{t}</a>" for u, t in items)
+    return f"<nav class=cl><b>🔍 CallLens</b>{links}<span><i></i>Side Quest Hotline · +1 (541) 777-8465</span></nav>"
+
+
+@app.middleware("http")
+async def polish(request: Request, call_next):
+    resp = await call_next(request)
+    if not resp.headers.get("content-type", "").startswith("text/html"):
+        return resp
+    body = b"".join([c async for c in resp.body_iterator]).decode()
+    path = request.url.path if request.url.path != "/" else "/dashboard"
+    i = body.find("</style>")
+    i = i + len("</style>") if i >= 0 else 0
+    body = body[:i] + POLISH + _nav(path) + body[i:]
+    return HTMLResponse(body, status_code=resp.status_code)

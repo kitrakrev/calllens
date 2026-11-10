@@ -1,5 +1,7 @@
 # CallLens + Side Quest Hotline
 
+**Project page + 50s demo:** https://kitrakrev.github.io/calllens/
+
 Built at the Vapi "Side Quest Hotline" hackathon (Nov 9, 2026).
 
 - **Side Quest Hotline**: Vapi voice agent (Deepgram Nova-3 + Aura). Tool server searches live with Exa; TypeSafe Jev picks the best result (typed Choice + probabilities).

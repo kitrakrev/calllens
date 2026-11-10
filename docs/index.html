@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CallLens — see inside every voice-agent call</title>
+<meta name="description" content="CallLens shows which turn of a Vapi voice call broke and why, judges every turn with TypeSafe Jev in ~120 ms, and self-heals the live agent.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d12;--panel:#141922;--line:#252b37;--txt:#e6e8ec;--mut:#9aa4b2;--grn:#5ce1a6;--org:#f2a65a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.6 Inter,system-ui,sans-serif}
+.w{max-width:1040px;margin:0 auto;padding:0 20px}
+header{padding:56px 0 24px}h1{font:700 52px/1.05 'Space Grotesk',sans-serif;margin:8px 0;color:#f3f4f1}
+.eye{color:var(--grn);font-weight:600;letter-spacing:2px;text-transform:uppercase;font-size:13px}
+.lead{font-size:20px;color:#bfc7d5;max-width:760px}
+.btns a{display:inline-block;margin:16px 10px 0 0;padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.p{background:var(--grn);color:#08110c}.s{border:1px solid var(--line);color:var(--txt)}
+video,img.shot{width:100%;border-radius:14px;border:1px solid var(--line);background:#000}
+h2{font:700 28px 'Space Grotesk',sans-serif;margin:48px 0 12px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.c{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}.c b{font:700 32px 'Space Grotesk';color:var(--grn);display:block}
+.c.o b{color:var(--org)}table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:14px;overflow:hidden}
+td,th{padding:12px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mut);font-size:13px;text-transform:uppercase}
+code{background:var(--panel);padding:2px 6px;border-radius:6px}footer{color:var(--mut);padding:48px 0;font-size:14px}
+</style></head><body><div class="w">
+<header><div class="eye">Vapi “Side Quest Hotline” hackathon · Nov 2026</div>
+<h1>CallLens</h1>
+<p class="lead">Voice agents fail silently: the caller just hangs up. CallLens shows exactly which turn of a Vapi call broke and why, judges every turn with TypeSafe Jev in ~120&nbsp;ms, and self-heals the live agent in one click.</p>
+<div class="btns"><a class="p" href="#demo">Watch the 50s demo</a><a class="s" href="https://github.com/kitrakrev/calllens">Code</a></div></header>
+
+<section id="demo"><video src="demo.mp4" controls playsinline poster="dashboard.jpg"></video></section>
+
+<h2>What one real call revealed</h2>
+<div class="g">
+<div class="c o"><b>Aero · Arrow · Amir</b>what Deepgram heard when I said “Embarcadero”</div>
+<div class="c o"><b>1530 ms</b>transcriber latency per turn: the bottleneck (LLM was 334 ms)</div>
+<div class="c"><b>10 / 22</b>turns failed: misheard or slow, each with a concrete fix</div>
+<div class="c"><b>3 / 3</b>searches where Jev picked a better result than Exa’s #1</div>
+</div>
+
+<h2>How it works</h2>
+<p>Caller → <b>Deepgram</b> Nova-3 (ears) → <b>Vapi</b> (orchestration) → tool server: <b>Exa</b> live search → <b>Jev</b> typed Choice → <b>Deepgram</b> Aura (voice).<br>
+CallLens pulls each call from the Vapi API, attributes latency per stage, has Jev label every turn (slow, misheard, tool issue, talked over, off track), score the whole call and detect the caller’s language, then turns findings into a live <code>PATCH /assistant</code>: Deepgram keyterms, a shorter endpointing wait, multilingual mode.</p>
+<img class="shot" src="turns.jpg" alt="Turn-by-turn diagnosis: misheard and slow turns highlighted with fixes">
+
+<h2>Vapi Composer vs CallLens, same call</h2>
+<table><tr><th></th><th>Vapi Composer</th><th>CallLens</th></tr>
+<tr><td>Root cause</td><td>Prompt re-asks location</td><td>Transcriber misheard “Embarcadero”</td></tr>
+<tr><td>Latency</td><td>Not mentioned</td><td>Transcriber 1530 ms = bottleneck</td></tr>
+<tr><td>Provider fix</td><td>“No change needed”</td><td>Deepgram keyterm + 0.4 s endpointing, applied live</td></tr>
+<tr><td>Speed</td><td>~45 s LLM agent</td><td>~120 ms per Jev judgment</td></tr></table>
+<p>Composer is right about the prompt; CallLens sees the speech layer. Best together.</p>
+
+<footer>Built by <a href="https://kitrakrev.github.io" style="color:var(--grn)">Karthik Raja Anandan</a> with Vapi, Deepgram, Exa and TypeSafe Jev · FastAPI</footer>
+</div></body></html>
