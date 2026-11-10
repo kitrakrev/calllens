@@ -199,7 +199,7 @@ a{color:var(--blu)}pre{background:var(--panel);border:1px solid var(--line);bord
 
 def _nav(path: str) -> str:
     items = [("/dashboard", "Dashboard"), ("/lens", "Call report"), ("/ab", "Jev A/B"), ("/heal", "Self-heal")]
-    links = "".join(f"<a class={'on' if path.startswith(u) else ''} href='{u}'>{t}</a>" for u, t in items)
+    links = "".join(f"<a class='{'on' if path.startswith(u) else ''}' href='{u}'>{t}</a>" for u, t in items)
     return f"<nav class=cl><b>🔍 CallLens</b>{links}<span><i></i>Side Quest Hotline · +1 (541) 777-8465</span></nav>"
 
 
